@@ -1,0 +1,16 @@
+{
+  "name": "meu-codigo",
+  "version": "1.0.0",
+  "scripts": {
+    "env:setup": "copy .env.example .env.local",
+    "start": "node --env-file=.env.local ./src/index.ts",
+    "chatBot": "node --env-file=.env.local ./src/chatBot.ts"
+  },
+  "type": "module",
+  "dependencies": {
+    "openai": "^7.57.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6"
+  }
+}
