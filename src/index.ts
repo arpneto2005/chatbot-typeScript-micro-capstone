@@ -1,14 +1,15 @@
-import { openai } from './clients/openai.ts';
-import { withRetry } from './utils/withRetry.ts';
+import { openai } from "./clients/openai.ts";
+import { generateWithCritique } from './utils/generateWithCritique.ts'
+import { withRetry } from './utils/withRetry.ts'
 
 const PERSONAS = {
-    "direito-tributario": {
+    "juridico": {
         systemMessage: "Você é um assistente especializado em direito tributário brasileiro. Responda de forma clara e objetiva, fornecendo informações precisas sobre legislação, regulamentações e práticas tributárias no Brasil. Evite fornecer conselhos legais específicos ou opiniões pessoais. Se não souber a resposta, indique que não possui informações suficientes.",
     },
-    financeiro: {
+    "financeiro": {
         systemMessage: "Você é um assistente especializado em finanças corporativas. Forneça informações detalhadas sobre gestão financeira, análise de investimentos, planejamento estratégico e práticas contábeis. Evite fornecer conselhos financeiros específicos ou opiniões pessoais. Se não souber a resposta, indique que não possui informações suficientes.",
     },
-    tecnico: {
+    "tecnico": {
         systemMessage: "Você é um assistente especializado em tecnologia da informação. Forneça informações detalhadas sobre desenvolvimento de software, infraestrutura de TI, segurança cibernética e tendências tecnológicas. Evite fornecer conselhos técnicos específicos ou opiniões pessoais. Se não souber a resposta, indique que não possui informações suficientes.",
     },
     // Adicione outras personas aqui, se necessário
@@ -59,6 +60,13 @@ function contractAnalysisPrompt(params: {
 }
 
 async function chatWithPersona(persona: keyof typeof PERSONAS, question: string) {
+    const systemPrompt = PERSONAS[persona].systemMessage;
+    const response = await generateWithCritique(systemPrompt, question);
+    console.log(`\n\n [${persona.toUpperCase()}] Resposta\n: ${response}`);
+}
+
+/* Código usando enquanto estava codificando a função withRetry 
+async function chatWithPersona(persona: keyof typeof PERSONAS, question: string) {
     await withRetry(async () => {
         const completion = await openai.chat.completions.create({
             model: "gemini-4-hydrogen",
@@ -72,18 +80,19 @@ async function chatWithPersona(persona: keyof typeof PERSONAS, question: string)
         //console.log(completion.choices[0].finish_reason);
 
         // Descomente o bloco abaixo se quiser ver a resposta em tempo real (streaming)
-        /*for await (const event of completion) {
-            const content = event.choices[0].delta?.content ?? "";
-            if (content.length > 0) {
-                process.stdout.write(content);
-            } 
-        }*/
+        //for await (const event of completion) {
+        //    const content = event.choices[0].delta?.content ?? "";
+        //    if (content.length > 0) {
+        //        process.stdout.write(content);
+        //    } 
+        //}
         const content = completion.choices[0].message?.content ?? "";
         if (content.length > 0) {
             console.log(content);
         }
     });
 }
+*/
 
 // Essa função foi comentada para ser criada outra função para atender a inserção do código de erro
 async function chatWithPersona1(persona: keyof typeof PERSONAS, question: string) {
@@ -105,12 +114,12 @@ async function chatWithPersona1(persona: keyof typeof PERSONAS, question: string
     //console.log(completion.choices[0].finish_reason);
 
     // Descomente o bloco abaixo se quiser ver a resposta em tempo real (streaming)
-    /*for await (const event of completion) {
-        const content = event.choices[0].delta?.content ?? "";
-        if (content.length > 0) {
-            process.stdout.write(content);
-        } 
-    }*/
+    //for await (const event of completion) {
+    //    const content = event.choices[0].delta?.content ?? "";
+    //    if (content.length > 0) {
+    //        process.stdout.write(content);
+    //    } 
+    //}
     const content = completion.choices[0].message?.content ?? "";
     if (content.length > 0) {
         console.log(content);
@@ -118,7 +127,7 @@ async function chatWithPersona1(persona: keyof typeof PERSONAS, question: string
 }
 
 console.log("--------------------------------------------------");
-await chatWithPersona("direito-tributario", contractAnalysisPrompt({
+await chatWithPersona("juridico", contractAnalysisPrompt({
     contractText: contract,
     clientType: "PJ",
     levelofDetail: "low"
